@@ -37,6 +37,11 @@ app.get('/user', function (req, res) {
         res.send(results)
     });
 })
+
+app.get('/designTest', function (req, res) {
+  res.render("designSample");
+})
+
 app.post('/userData', function (req, res) {
   console.log("사용자 요청이 발생");
   console.log(req.body);
