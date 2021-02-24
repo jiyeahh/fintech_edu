@@ -1,5 +1,35 @@
 <!DOCTYPE html>
     <h1>hello hi bye</h1>
     <h2>ejs로 만든 페이지 입니다.</h2>
-    <button>button</button>
+    <input type="text" id="inputText" />
+    <input type="text" id="otherText" />
+    <button id="eventButton">button</button>
+    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <script>
+        $("#eventButton").click(function(){
+            // alert("click");
+            var userInput = $("#inputText").val();
+            var otherInput = $("#otherText").val();
+            // alert("사용자 입력데이터는 : " + userInput + otherText);
+
+
+            //http방식으로 특정 데이터를 전달하고 response를 받아올 수 있음 - ajax
+            $.ajax({
+                url: "/userData",
+                type: "POST",
+                data: {
+                    userData1 : userInput,
+                    userData2 : otherInput
+                },
+                success: function (data) {
+                    console.log(data);
+                    if(data === true){
+                        alert("요청 성공");
+                    }
+                },
+
+            });
+        })
+    </script>
+
 </html>
