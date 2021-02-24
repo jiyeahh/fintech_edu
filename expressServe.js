@@ -2,8 +2,8 @@ const express = require('express')
 const path = require('path')
 const request = require('request');
 const app = express()
-var jwt = require('jsonwebtoken');
-
+const jwt = require('jsonwebtoken');
+const auth = require("./lib/auth")
 // json타입에 데이터 전송을 허용한다
 app.use(express.json());
 //form타입에 데이터 전송을 허용한다
@@ -44,6 +44,9 @@ app.get('/signup', function (req, res) {
 })
 app.get('/login', function (req, res) {
   res.render('login');
+})
+app.get('/authTest', auth, function (req, res) {
+  res.send('정상적으로 로그인 되셨습니다.');
 })
 app.get('/authResult', function (req, res) {
   var authCode = req.query.code;
