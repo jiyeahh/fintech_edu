@@ -53,6 +53,12 @@ app.get('/main', function (req, res) {
 app.get('/balance', function (req, res) {
   res.render('balance');
 })
+app.get('/qrcode', function (req, res) {
+  res.render('qrcode');
+})
+app.get('/qrreader', function (req, res) {
+  res.render('qrreader');
+})
 app.get('/authTest', auth, function (req, res) {
   res.send('정상적으로 로그인 되셨습니다.');
 })
