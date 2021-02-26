@@ -272,5 +272,137 @@ app.post('/transactionList', auth, function (req, res) {
     }
   })
 })
+app.post('/balance', auth, function (req, res) {
+  var user = req.decoded;
+  var finusenum = req.body.fin_use_num
+  var sql = "SELECT * FROM user WHERE id = ?";
+  var countnum = Math.floor(Math.random() * 1000000000) + 1;
+  var transId = companyId + countnum;
+  // console.log(transId);
+  var transdtime = moment(new Date()).format('YYYYMMDDhhmmss');
 
+  connection.query(sql,[user.userId], function(err, result){
+    if(err) throw err;
+    else {
+      var dbUserData = result[0];
+      var option = {
+          method : "GET",
+          url : "https://testapi.openbanking.or.kr/v2.0/account/balance/fin_num",
+          headers : {
+              Authorization : "Bearer " + dbUserData.accesstoken
+          },
+          qs : {
+            bank_tran_id: transId,
+            fintech_use_num: finusenum,
+            tran_dtime: transdtime
+          }
+      }
+      request(option, function(err, response, body){
+          if(err){
+              console.error(err);
+              throw err;
+          }
+          else {
+              var balanceRequestResult = JSON.parse(body);
+              res.json(balanceRequestResult)
+          }
+      })        
+
+    }
+  })
+})
+app.post('/withdraw', auth, function (req, res) {
+  //사용자 출금이체 API
+
+  var user = req.decoded;
+  var finusenum = req.body.fin_use_num
+  var countnum = Math.floor(Math.random() * 1000000000) + 1;
+  var amount = req.body.amount
+  var transId = companyId + countnum;
+  var transdtime = moment(new Date()).format('YYYYMMDDhhmmss');
+  var sql = "SELECT * FROM user WHERE id = ?";
+
+  console.log(req.body);
+  connection.query(sql, [user.userId], function (err, result) {
+    if (err) throw err;
+    else {
+      //requset 출금 이체 Api 요청하기
+      var dbUserData = result[0];
+      var option = {
+        method: "POST",
+        url: "https://testapi.openbanking.or.kr/v2.0/transfer/withdraw/fin_num",
+        headers: {
+          Authorization: "Bearer " + dbUserData.accesstoken
+        },
+        json: {
+          "bank_tran_id": transId,
+          "cntr_account_type": "N",
+          "cntr_account_num": "098709871234",
+          "dps_print_content": "asdfasf",
+          "fintech_use_num": finusenum,
+          "wd_print_content": "오픈뱅킹출금1",
+          "tran_amt": amount,
+          "tran_dtime": transdtime,
+          "req_client_name": "한지예",
+          "req_client_fintech_use_num": finusenum,
+          "req_client_num": "HONGGILDONG1234",
+          "transfer_purpose": "ST",
+          "recv_client_name": "홍길동",
+          "recv_client_bank_code": "097",
+          "recv_client_account_num": "098709871234"
+        }
+      }
+      request(option, function (err, response, body) {
+        if (err) {
+          console.error(err);
+          throw err;
+        }
+        else {
+          var withdrawRequestResult = body;
+          if (withdrawRequestResult.rsp_code === "A0000") {
+            var countnum2 = Math.floor(Math.random() * 1000000000) + 1;
+            var transId2 = companyId + countnum2;
+            var transdtime2 = moment(new Date()).format('YYYYMMDDhhmmss');
+            var option = {
+              method: "POST",
+              url: "https://testapi.openbanking.or.kr/v2.0/transfer/deposit/fin_num",
+              headers: {
+                Authorization: "Bearer " + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJNMjAyMTExNTg5Iiwic2NvcGUiOlsib29iIl0sImlzcyI6Imh0dHBzOi8vd3d3Lm9wZW5iYW5raW5nLm9yLmtyIiwiZXhwIjoxNjIyMDg2Nzc3LCJqdGkiOiJmMTMyMTk1Ni1iMjcwLTRlNjItOTk0NC0wN2MxYzNkODliNWQifQ.GbX_mmtp-I9TZbmiSh6zYz6mjk02JLZgoitqcDvCRYs"
+              },
+              //get 요청을 보낼때 데이터는 qs, post 에 form, json 입력가능
+              json: {
+                "cntr_account_type": "N",
+                "cntr_account_num": "098709871234",
+                "wd_pass_phrase": "NONE",
+                "wd_print_content": "환불금액",
+                "name_check_option": "off",
+                "tran_dtime": transdtime2,
+                "req_cnt": "1",
+                "req_list": [
+                  {
+                    "tran_no": "1",
+                    "bank_tran_id": transId2,
+                    "fintech_use_num": req.body.to_fin_use_num,
+                    "print_content": "쇼핑몰환불",
+                    "tran_amt": req.body.amount,
+                    "req_client_name": "홍길동",
+                    "req_client_num": "HONGGILDONG1234",
+                    "req_client_fintech_use_num": req.body.fin_use_num,
+                    "transfer_purpose": "ST"
+                  }
+                ]
+              }
+            }
+            request(option, function (error, response, body) {
+              console.log(body);
+              res.json(body);
+            });
+          
+          }
+          //입금 api 실행 A0000 res_code 입급이체 발생
+        }
+      })
+    }
+  })
+})
 app.listen(3000)
